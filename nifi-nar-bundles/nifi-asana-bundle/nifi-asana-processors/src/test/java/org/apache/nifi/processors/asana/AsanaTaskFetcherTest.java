@@ -38,6 +38,7 @@ import org.mockito.quality.Strictness;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -298,15 +299,15 @@ public class AsanaTaskFetcherTest {
 
         final AsanaObject object1 = fetcher.fetchNext();
         assertEquals(AsanaObjectState.NEW, object1.getState());
-        assertEquals(task3.gid, object1.getGid());
 
         final AsanaObject object2 = fetcher.fetchNext();
         assertEquals(AsanaObjectState.NEW, object2.getState());
-        assertEquals(task2.gid, object2.getGid());
+        assertNotEquals(object1, object2);
 
         final AsanaObject object3 = fetcher.fetchNext();
         assertEquals(AsanaObjectState.NEW, object3.getState());
-        assertEquals(task1.gid, object3.getGid());
+        assertNotEquals(object1, object3);
+        assertNotEquals(object2, object3);
 
         assertNull(fetcher.fetchNext());
 

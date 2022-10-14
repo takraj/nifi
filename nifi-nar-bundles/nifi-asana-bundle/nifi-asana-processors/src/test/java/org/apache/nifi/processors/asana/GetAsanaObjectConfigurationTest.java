@@ -24,9 +24,9 @@ import com.asana.models.Team;
 import com.asana.models.User;
 import com.google.api.client.util.DateTime;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.controller.asana.AsanaClientServiceApi;
+import org.apache.nifi.controller.asana.AsanaClientProviderService;
 import org.apache.nifi.controller.asana.AsanaEventsCollection;
-import org.apache.nifi.processors.asana.mocks.MockAsanaClientService;
+import org.apache.nifi.processors.asana.mocks.MockAsanaClientProviderService;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.TestRunner;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,12 +63,12 @@ import static org.mockito.Mockito.when;
 public class GetAsanaObjectConfigurationTest {
 
     private TestRunner runner;
-    private MockAsanaClientService mockService;
+    private MockAsanaClientProviderService mockService;
 
     @BeforeEach
     public void init() {
         runner = newTestRunner(GetAsanaObject.class);
-        mockService = new MockAsanaClientService();
+        mockService = new MockAsanaClientProviderService();
     }
 
     @Test
@@ -403,7 +403,7 @@ public class GetAsanaObjectConfigurationTest {
     }
 
     private void withMockAsanaClientService() throws InitializationException {
-        final String serviceIdentifier = AsanaClientServiceApi.class.getName();
+        final String serviceIdentifier = AsanaClientProviderService.class.getName();
         runner.addControllerService(serviceIdentifier, mockService);
         runner.enableControllerService(mockService);
         runner.setProperty(PROP_ASANA_CONTROLLER_SERVICE, serviceIdentifier);

@@ -16,11 +16,12 @@
  */
 package org.apache.nifi.processors.asana;
 
-import com.google.common.collect.Lists;
 import org.apache.nifi.processors.asana.mocks.MockPollableAsanaObjectFetcher;
 import org.apache.nifi.processors.asana.utils.AsanaObject;
 import org.apache.nifi.processors.asana.utils.AsanaObjectState;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -50,7 +51,7 @@ public class PollableAsanaObjectFetcherTest {
         assertNull(fetcher.fetchNext());
         assertEquals(5, fetcher.pollCount);
 
-        fetcher.items = Lists.newArrayList(oneObject, otherObject);
+        fetcher.items = Arrays.asList(oneObject, otherObject);
         assertEquals(oneObject, fetcher.fetchNext());
         assertEquals(6, fetcher.pollCount);
         assertEquals(otherObject, fetcher.fetchNext());
@@ -60,10 +61,10 @@ public class PollableAsanaObjectFetcherTest {
         assertNull(fetcher.fetchNext());
         assertEquals(8, fetcher.pollCount);
 
-        fetcher.items = Lists.newArrayList(oneObject, otherObject);
+        fetcher.items = Arrays.asList(oneObject, otherObject);
         assertEquals(oneObject, fetcher.fetchNext());
         assertEquals(9, fetcher.pollCount);
-        fetcher.items = Lists.newArrayList(oneObject, otherObject);
+        fetcher.items = Arrays.asList(oneObject, otherObject);
         assertEquals(otherObject, fetcher.fetchNext());
         assertEquals(9, fetcher.pollCount);
         assertEquals(oneObject, fetcher.fetchNext());

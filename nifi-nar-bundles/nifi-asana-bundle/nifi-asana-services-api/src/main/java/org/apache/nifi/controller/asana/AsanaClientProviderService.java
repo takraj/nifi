@@ -21,7 +21,7 @@ import org.apache.nifi.controller.ControllerService;
 /**
  * This interface represents an API to the controller service of Asana processors.
  */
-public interface AsanaClientServiceApi extends ControllerService {
+public interface AsanaClientProviderService extends ControllerService {
 
     /**
      * Creates an Asana client with authentication, workspace, and API endpoint related settings pre-configured.

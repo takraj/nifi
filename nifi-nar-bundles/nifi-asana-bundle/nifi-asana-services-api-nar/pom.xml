@@ -22,7 +22,7 @@
         <version>1.19.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>nifi-asana-nar</artifactId>
+    <artifactId>nifi-asana-services-api-nar</artifactId>
     <packaging>nar</packaging>
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -32,11 +32,8 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-asana-processors</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-asana-services</artifactId>
+            <artifactId>nifi-asana-services-api</artifactId>
+            <version>1.19.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi</groupId>
@@ -45,4 +42,5 @@
             <type>nar</type>
         </dependency>
     </dependencies>
+
 </project>

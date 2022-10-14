@@ -17,7 +17,6 @@
 package org.apache.nifi.controller.asana;
 
 import com.asana.Client;
-import com.google.common.collect.Lists;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
@@ -28,14 +27,15 @@ import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.nifi.controller.asana.AsanaClientImpl.ASANA_CLIENT_OPTION_BASE_URL;
+import static org.apache.nifi.controller.asana.StandardAsanaClient.ASANA_CLIENT_OPTION_BASE_URL;
 
 @CapabilityDescription("Common service to authenticate with Asana, and to work on a specified workspace.")
 @Tags({"asana", "service", "authentication"})
-public class AsanaClientService extends AbstractControllerService implements AsanaClientServiceApi {
+public class StandardAsanaClientProviderProviderService extends AbstractControllerService implements AsanaClientProviderService {
 
     protected static final String ASANA_API_URL = "asana-api-url";
     protected static final String ASANA_PERSONAL_ACCESS_TOKEN = "asana-personal-access-token";
@@ -75,15 +75,15 @@ public class AsanaClientService extends AbstractControllerService implements Asa
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
             .build();
 
-    protected static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Lists.newArrayList(
+    protected static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
             PROP_ASANA_API_BASE_URL,
             PROP_ASANA_PERSONAL_ACCESS_TOKEN,
             PROP_ASANA_WORKSPACE_NAME
     ));
 
-    private String personalAccessToken;
-    private String workspaceName;
-    private String baseUrl;
+    private volatile String personalAccessToken;
+    private volatile String workspaceName;
+    private volatile String baseUrl;
 
     @Override
     public List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -99,6 +99,6 @@ public class AsanaClientService extends AbstractControllerService implements Asa
 
     @Override
     public synchronized AsanaClient createClient() {
-        return new AsanaClientImpl(personalAccessToken, workspaceName, baseUrl);
+        return new StandardAsanaClient(personalAccessToken, workspaceName, baseUrl);
     }
 }

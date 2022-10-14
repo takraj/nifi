@@ -16,10 +16,9 @@
  */
 package org.apache.nifi.processors.asana;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.apache.http.entity.ContentType;
 import org.apache.nifi.annotation.behavior.InputRequirement;
+import org.apache.nifi.annotation.behavior.PrimaryNodeOnly;
 import org.apache.nifi.annotation.behavior.Stateful;
 import org.apache.nifi.annotation.behavior.TriggerSerially;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -31,7 +30,7 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.state.Scope;
 import org.apache.nifi.components.state.StateMap;
 import org.apache.nifi.controller.asana.AsanaClient;
-import org.apache.nifi.controller.asana.AsanaClientServiceApi;
+import org.apache.nifi.controller.asana.AsanaClientProviderService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.apache.nifi.processor.AbstractProcessor;
@@ -60,19 +59,22 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 @TriggerSerially
-@Stateful(scopes = {Scope.LOCAL}, description = "Fingerprints of items in the last successful query are stored in order to enable incremental loading and change detection.")
+@PrimaryNodeOnly
+@Stateful(scopes = {Scope.CLUSTER}, description = "Fingerprints of items in the last successful query are stored in order to enable incremental loading and change detection.")
 @InputRequirement(InputRequirement.Requirement.INPUT_FORBIDDEN)
 @WritesAttribute(attribute = GetAsanaObject.ASANA_GID, description = "Global ID of the object in Asana.")
-@Tags({"asana", "source", "connector", "ingest"})
+@Tags({"asana", "source", "ingest"})
 @CapabilityDescription("This processor collects data from Asana")
 public class GetAsanaObject extends AbstractProcessor {
 
@@ -107,7 +109,7 @@ public class GetAsanaObject extends AbstractProcessor {
 
     protected static final AllowableValue AV_COLLECT_TASK_ATTACHMENTS = new AllowableValue(
             AV_NAME_COLLECT_TASK_ATTACHMENTS,
-            "Task attachments",
+            "Task Attachments",
             "Collect attached files of tasks matching to the specified conditions."
     );
 
@@ -131,7 +133,7 @@ public class GetAsanaObject extends AbstractProcessor {
 
     protected static final AllowableValue AV_COLLECT_PROJECT_MEMBERS = new AllowableValue(
             AV_NAME_COLLECT_PROJECT_MEMBERS,
-            "Members of a project",
+            "Members of a Project",
             "Collect users assigned to the specified project."
     );
 
@@ -143,45 +145,45 @@ public class GetAsanaObject extends AbstractProcessor {
 
     protected static final AllowableValue AV_COLLECT_TEAM_MEMBERS = new AllowableValue(
             AV_NAME_COLLECT_TEAM_MEMBERS,
-            "Team members",
+            "Team Members",
             "Collect users assigned to the specified team."
     );
 
     protected static final AllowableValue AV_COLLECT_STORIES = new AllowableValue(
             AV_NAME_COLLECT_STORIES,
-            "Stories of tasks",
+            "Stories of Tasks",
             "Collect stories (comments) of of tasks matching to the specified conditions."
     );
 
     protected static final AllowableValue AV_COLLECT_PROJECT_STATUS_UPDATES = new AllowableValue(
             AV_NAME_COLLECT_PROJECT_STATUS_UPDATES,
-            "Status updates of a project",
+            "Status Updates of a Project",
             "Collect status updates of the specified project."
     );
 
     protected static final AllowableValue AV_COLLECT_PROJECT_STATUS_ATTACHMENTS = new AllowableValue(
             AV_NAME_COLLECT_PROJECT_STATUS_ATTACHMENTS,
-            "Attachments of status updates",
+            "Attachments of Status Updates",
             "Collect attached files of project status updates."
     );
 
     protected static final AllowableValue AV_COLLECT_PROJECT_EVENTS = new AllowableValue(
             AV_NAME_COLLECT_PROJECT_EVENTS,
-            "Events of a project",
+            "Events of a Project",
             "Collect various events happening on the specified project and on its' tasks."
     );
 
     protected static final PropertyDescriptor PROP_ASANA_CONTROLLER_SERVICE = new PropertyDescriptor.Builder()
             .name(ASANA_CONTROLLER_SERVICE)
-            .displayName("Controller service")
+            .displayName("Asana Controller Service")
             .description("Specify which controller service to use for accessing Asana.")
             .required(true)
-            .identifiesControllerService(AsanaClientServiceApi.class)
+            .identifiesControllerService(AsanaClientProviderService.class)
             .build();
 
     protected static final PropertyDescriptor PROP_ASANA_OBJECT_TYPE = new PropertyDescriptor.Builder()
             .name(ASANA_OBJECT_TYPE)
-            .displayName("Object type to be collected")
+            .displayName("Object Type")
             .description("Specify what kind of objects to be collected from Asana")
             .required(true)
             .allowableValues(
@@ -202,7 +204,7 @@ public class GetAsanaObject extends AbstractProcessor {
 
     protected static final PropertyDescriptor PROP_ASANA_PROJECT = new PropertyDescriptor.Builder()
             .name(ASANA_PROJECT_NAME)
-            .displayName("Project name")
+            .displayName("Project Name")
             .description("Fetch only objects in this project. Case sensitive.")
             .required(true)
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
@@ -219,7 +221,7 @@ public class GetAsanaObject extends AbstractProcessor {
 
     protected static final PropertyDescriptor PROP_ASANA_SECTION = new PropertyDescriptor.Builder()
             .name(ASANA_SECTION_NAME)
-            .displayName("Section name")
+            .displayName("Section Name")
             .description("Fetch only objects in this section. Case sensitive.")
             .addValidator(StandardValidators.NON_BLANK_VALIDATOR)
             .dependsOn(PROP_ASANA_OBJECT_TYPE, AV_COLLECT_TASKS, AV_COLLECT_TASK_ATTACHMENTS, AV_COLLECT_STORIES)
@@ -253,7 +255,7 @@ public class GetAsanaObject extends AbstractProcessor {
             .addValidator(StandardValidators.NON_NEGATIVE_INTEGER_VALIDATOR)
             .build();
 
-    protected static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Lists.newArrayList(
+    protected static final List<PropertyDescriptor> DESCRIPTORS = Collections.unmodifiableList(Arrays.asList(
             PROP_ASANA_CONTROLLER_SERVICE,
             PROP_ASANA_OBJECT_TYPE,
             PROP_ASANA_PROJECT,
@@ -280,17 +282,16 @@ public class GetAsanaObject extends AbstractProcessor {
                     + "are carried by the asana.gid attribute of the generated FlowFiles.")
             .build();
 
-    protected static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(Sets.newHashSet(
+    protected static final Set<Relationship> RELATIONSHIPS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             REL_NEW,
             REL_UPDATED,
             REL_REMOVED
-    ));
+    )));
 
-    final Scope STATE_STORAGE_SCOPE = Scope.LOCAL;
+    private static final Scope STATE_STORAGE_SCOPE = Scope.CLUSTER;
 
-    AsanaClientServiceApi controllerService;
-    AsanaObjectFetcher objectFetcher;
-    private Integer batchSize;
+    private volatile AsanaObjectFetcher objectFetcher;
+    private volatile Integer batchSize;
 
     @Override
     public Set<Relationship> getRelationships() {
@@ -304,7 +305,7 @@ public class GetAsanaObject extends AbstractProcessor {
 
     @OnScheduled
     public synchronized void onScheduled(final ProcessContext context) throws InitializationException {
-        controllerService = context.getProperty(PROP_ASANA_CONTROLLER_SERVICE).asControllerService(AsanaClientServiceApi.class);
+        AsanaClientProviderService controllerService = context.getProperty(PROP_ASANA_CONTROLLER_SERVICE).asControllerService(AsanaClientProviderService.class);
         AsanaClient client = controllerService.createClient();
         batchSize = context.getProperty(PROP_ASANA_OUTPUT_BATCH_SIZE).asInteger();
 
@@ -408,7 +409,7 @@ public class GetAsanaObject extends AbstractProcessor {
                 return new AsanaUserFetcher(client);
         }
 
-        throw new RuntimeException("Cannot fetch objects of type: " + objectType);
+        throw new ProcessException("Cannot fetch objects of type: " + objectType);
     }
 
     private Optional<Map<String, String>> recoverState(final ProcessContext context) throws IOException {

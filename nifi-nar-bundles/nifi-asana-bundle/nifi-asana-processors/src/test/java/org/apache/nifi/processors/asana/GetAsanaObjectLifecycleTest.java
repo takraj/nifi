@@ -18,8 +18,8 @@ package org.apache.nifi.processors.asana;
 
 import org.apache.groovy.util.Maps;
 import org.apache.nifi.components.state.Scope;
-import org.apache.nifi.controller.asana.AsanaClientServiceApi;
-import org.apache.nifi.processors.asana.mocks.MockAsanaClientService;
+import org.apache.nifi.controller.asana.AsanaClientProviderService;
+import org.apache.nifi.processors.asana.mocks.MockAsanaClientProviderService;
 import org.apache.nifi.processors.asana.mocks.MockGetAsanaObject;
 import org.apache.nifi.processors.asana.utils.AsanaObject;
 import org.apache.nifi.processors.asana.utils.AsanaObjectFetcher;
@@ -57,13 +57,13 @@ import static org.mockito.Mockito.when;
 
 public class GetAsanaObjectLifecycleTest {
     private TestRunner runner;
-    private MockAsanaClientService mockService;
+    private MockAsanaClientProviderService mockService;
     private AsanaObjectFetcher mockObjectFetcher;
 
     @BeforeEach
     public void init() {
         runner = newTestRunner(MockGetAsanaObject.class);
-        mockService = new MockAsanaClientService();
+        mockService = new MockAsanaClientProviderService();
         mockObjectFetcher = ((MockGetAsanaObject)runner.getProcessor()).objectFetcher;
     }
 
@@ -229,7 +229,7 @@ public class GetAsanaObjectLifecycleTest {
             "Key2", "Value2"
         );
 
-        runner.getStateManager().setState(validState, Scope.LOCAL);
+        runner.getStateManager().setState(validState, Scope.CLUSTER);
 
         when(mockObjectFetcher.fetchNext()).thenReturn(null);
 
@@ -246,7 +246,7 @@ public class GetAsanaObjectLifecycleTest {
 
         final Map<String, String> invalidState = singletonMap("Key", "Value");
 
-        runner.getStateManager().setState(invalidState, Scope.LOCAL);
+        runner.getStateManager().setState(invalidState, Scope.CLUSTER);
 
         doThrow(new RuntimeException()).when(mockObjectFetcher).loadState(invalidState);
         when(mockObjectFetcher.fetchNext()).thenReturn(null);
@@ -267,7 +267,7 @@ public class GetAsanaObjectLifecycleTest {
 
         runner.run(1);
 
-        assertTrue(runner.getStateManager().getState(Scope.LOCAL).toMap().isEmpty());
+        assertTrue(runner.getStateManager().getState(Scope.CLUSTER).toMap().isEmpty());
     }
 
     @Test
@@ -284,11 +284,11 @@ public class GetAsanaObjectLifecycleTest {
 
         runner.run(1);
 
-        assertEquals(state, runner.getStateManager().getState(Scope.LOCAL).toMap());
+        assertEquals(state, runner.getStateManager().getState(Scope.CLUSTER).toMap());
     }
 
     private void withMockAsanaClientService() throws InitializationException {
-        final String serviceIdentifier = AsanaClientServiceApi.class.getName();
+        final String serviceIdentifier = AsanaClientProviderService.class.getName();
         runner.addControllerService(serviceIdentifier, mockService);
         runner.enableControllerService(mockService);
         runner.setProperty(PROP_ASANA_CONTROLLER_SERVICE, serviceIdentifier);

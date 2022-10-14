@@ -30,15 +30,15 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.apache.nifi.controller.asana.AsanaClientService.PROP_ASANA_API_BASE_URL;
-import static org.apache.nifi.controller.asana.AsanaClientService.PROP_ASANA_PERSONAL_ACCESS_TOKEN;
-import static org.apache.nifi.controller.asana.AsanaClientService.PROP_ASANA_WORKSPACE_NAME;
+import static org.apache.nifi.controller.asana.StandardAsanaClientProviderProviderService.PROP_ASANA_API_BASE_URL;
+import static org.apache.nifi.controller.asana.StandardAsanaClientProviderProviderService.PROP_ASANA_PERSONAL_ACCESS_TOKEN;
+import static org.apache.nifi.controller.asana.StandardAsanaClientProviderProviderService.PROP_ASANA_WORKSPACE_NAME;
 import static org.apache.nifi.util.TestRunners.newTestRunner;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AsanaClientServiceTest {
+public class StandardAsanaClientProviderServiceTest {
 
     private static final String LOCALHOST = "localhost";
 
@@ -80,14 +80,14 @@ public class AsanaClientServiceTest {
             "}";
 
     private TestRunner runner;
-    private AsanaClientService service;
+    private StandardAsanaClientProviderProviderService service;
     private MockWebServer mockWebServer;
 
     @BeforeEach
     public void init() throws InitializationException {
         runner = newTestRunner(NoOpProcessor.class);
-        service = new AsanaClientService();
-        runner.addControllerService(AsanaClientServiceApi.class.getName(), service);
+        service = new StandardAsanaClientProviderProviderService();
+        runner.addControllerService(AsanaClientProviderService.class.getName(), service);
         mockWebServer = new MockWebServer();
     }
 

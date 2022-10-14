@@ -27,9 +27,11 @@
 
     <modules>
         <module>nifi-asana-processors</module>
+        <module>nifi-asana-processors-nar</module>
         <module>nifi-asana-services</module>
+        <module>nifi-asana-services-nar</module>
         <module>nifi-asana-services-api</module>
-        <module>nifi-asana-nar</module>
+        <module>nifi-asana-services-api-nar</module>
     </modules>
 
     <dependencyManagement>

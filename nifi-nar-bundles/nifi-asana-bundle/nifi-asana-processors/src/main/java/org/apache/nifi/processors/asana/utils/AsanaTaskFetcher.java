@@ -19,7 +19,6 @@ package org.apache.nifi.processors.asana.utils;
 import com.asana.models.Project;
 import com.asana.models.Section;
 import com.asana.models.Task;
-import com.google.common.collect.Sets;
 import org.apache.nifi.controller.asana.AsanaClient;
 
 import java.util.Arrays;
@@ -81,8 +80,9 @@ public class AsanaTaskFetcher extends GenericAsanaObjectFetcher<Task> {
                 .flatMap(t -> t.keySet().stream())
                 .collect(Collectors.toSet());
 
-            return Sets.intersection(taskIdsWithTag, result.keySet())
-                .stream()
+            taskIdsWithTag.retainAll(result.keySet());
+
+            return taskIdsWithTag.stream()
                 .map(result::get)
                 .collect(Collectors.toMap(task -> task.gid, task -> task));
         }

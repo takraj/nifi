@@ -18,11 +18,11 @@ package org.apache.nifi.processors.asana.mocks;
 
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.asana.AsanaClient;
-import org.apache.nifi.controller.asana.AsanaClientServiceApi;
+import org.apache.nifi.controller.asana.AsanaClientProviderService;
 
 import static org.mockito.Mockito.mock;
 
-public class MockAsanaClientService extends AbstractControllerService implements AsanaClientServiceApi {
+public class MockAsanaClientProviderService extends AbstractControllerService implements AsanaClientProviderService {
 
     public final AsanaClient client = mock(AsanaClient.class);
 

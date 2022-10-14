@@ -44,14 +44,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class AsanaClientImpl implements AsanaClient {
+public class StandardAsanaClient implements AsanaClient {
 
     static final String ASANA_CLIENT_OPTION_BASE_URL = "base_url";
 
     private final Client client;
     private final Workspace workspace;
 
-    public AsanaClientImpl(String personalAccessToken, String workspaceName, String baseUrl) {
+    public StandardAsanaClient(String personalAccessToken, String workspaceName, String baseUrl) {
         client = Client.accessToken(personalAccessToken);
         if (baseUrl != null) {
             client.options.put(ASANA_CLIENT_OPTION_BASE_URL, baseUrl);

@@ -35,7 +35,7 @@ import static org.apache.nifi.controller.asana.StandardAsanaClient.ASANA_CLIENT_
 
 @CapabilityDescription("Common service to authenticate with Asana, and to work on a specified workspace.")
 @Tags({"asana", "service", "authentication"})
-public class StandardAsanaClientProviderProviderService extends AbstractControllerService implements AsanaClientProviderService {
+public class StandardAsanaClientProviderService extends AbstractControllerService implements AsanaClientProviderService {
 
     protected static final String ASANA_API_URL = "asana-api-url";
     protected static final String ASANA_PERSONAL_ACCESS_TOKEN = "asana-personal-access-token";

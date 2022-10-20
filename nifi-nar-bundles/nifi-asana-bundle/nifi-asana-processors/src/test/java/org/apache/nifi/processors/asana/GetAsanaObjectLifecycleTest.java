@@ -258,16 +258,18 @@ public class GetAsanaObjectLifecycleTest {
     }
 
     @Test
-    public void testStateIsNotSavedIfProcessorYields() throws InitializationException, IOException {
+    public void testStateIsSavedIfProcessorYields() throws InitializationException, IOException {
         withMockAsanaClientService();
         runner.setProperty(PROP_ASANA_OBJECT_TYPE, AV_COLLECT_PROJECTS);
 
-        when(mockObjectFetcher.saveState()).thenReturn(singletonMap("Key", "Value"));
+        final Map<String, String> state = singletonMap("Key", "Value");
+
+        when(mockObjectFetcher.saveState()).thenReturn(state);
         when(mockObjectFetcher.fetchNext()).thenReturn(null);
 
         runner.run(1);
 
-        assertTrue(runner.getStateManager().getState(Scope.CLUSTER).toMap().isEmpty());
+        assertEquals(state, runner.getStateManager().getState(Scope.CLUSTER).toMap());
     }
 
     @Test

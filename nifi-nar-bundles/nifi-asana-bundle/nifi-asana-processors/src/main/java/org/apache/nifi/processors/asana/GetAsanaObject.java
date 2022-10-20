@@ -356,14 +356,12 @@ public class GetAsanaObject extends AbstractProcessor {
         if (newItems.isEmpty() && updatedItems.isEmpty() && removedItems.isEmpty()) {
             context.yield();
             getLogger().debug("Yielding, as there are no new FlowFiles.");
-            return;
+        } else {
+            session.transfer(newItems, REL_NEW);
+            session.transfer(updatedItems, REL_UPDATED);
+            session.transfer(removedItems, REL_REMOVED);
+            session.commitAsync();
         }
-
-        session.transfer(newItems, REL_NEW);
-        session.transfer(updatedItems, REL_UPDATED);
-        session.transfer(removedItems, REL_REMOVED);
-
-        session.commitAsync();
         Map<String, String> state = objectFetcher.saveState();
         try {
             persistState(state, context);

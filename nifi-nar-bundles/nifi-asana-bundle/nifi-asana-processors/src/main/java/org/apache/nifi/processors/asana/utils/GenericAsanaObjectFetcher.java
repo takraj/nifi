@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -66,7 +67,7 @@ public abstract class GenericAsanaObjectFetcher<T> extends PollableAsanaObjectFe
         try {
             state.put(this.getClass().getName() + LAST_FINGERPRINTS, compress(Json.getInstance().toJson(lastFingerprints)));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
         return state;
     }
@@ -78,7 +79,7 @@ public abstract class GenericAsanaObjectFetcher<T> extends PollableAsanaObjectFe
             try {
                 lastFingerprints = Json.getInstance().fromJson(decompress(state.get(this.getClass().getName() + LAST_FINGERPRINTS)), type);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
     }

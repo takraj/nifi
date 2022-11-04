@@ -37,6 +37,7 @@ import com.asana.requests.EventsRequest;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.projects.getProjects(null, null, workspace.gid, null, null, getSerializedFieldNames(Project.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -87,7 +88,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.users.getUsersForWorkspace(workspace.gid, null, getSerializedFieldNames(User.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -97,7 +98,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.projectMemberships.getProjectMembershipsForProject(project.gid, null, null, null, getSerializedFieldNames(ProjectMembership.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -118,7 +119,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.teams.getTeamsForWorkspace(workspace.gid, null, null, getSerializedFieldNames(Team.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -129,7 +130,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.users.getUsersForTeam(team.gid, null, getSerializedFieldNames(User.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -150,7 +151,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.sections.getSectionsForProject(project.gid, null, null, getSerializedFieldNames(Section.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -161,7 +162,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.tasks.getTasksForProject(project.gid, null, null, null, getSerializedFieldNames(Task.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -172,7 +173,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.tasks.getTasksForTag(tag.gid, null, null, getSerializedFieldNames(Task.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -183,7 +184,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.tasks.getTasksForSection(section.gid, null, null, getSerializedFieldNames(Task.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -194,7 +195,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.tags.getTags(workspace.gid, null, null, getSerializedFieldNames(Tag.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -205,7 +206,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.projectStatuses.getProjectStatusesForProject(project.gid, null, null, getSerializedFieldNames(ProjectStatus.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -216,7 +217,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.stories.getStoriesForTask(task.gid, null, null, getSerializedFieldNames(Story.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -227,7 +228,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.attachments.getAttachmentsForObject(task.gid, null, null, getSerializedFieldNames(Attachment.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -238,7 +239,7 @@ public class StandardAsanaClient implements AsanaClient {
                     client.attachments.getAttachmentsForObject(projectStatus.gid, null, null, getSerializedFieldNames(Attachment.class), false)
             );
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -251,7 +252,7 @@ public class StandardAsanaClient implements AsanaClient {
                     .filter(w -> w.name.equals(workspaceName))
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
 
         if (results.isEmpty()) {
@@ -279,7 +280,7 @@ public class StandardAsanaClient implements AsanaClient {
 
             return new AsanaEventsCollection(resultSyncToken, resultEvents);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

@@ -16,22 +16,19 @@
  */
 package org.apache.nifi.controller.asana;
 
+import static org.apache.nifi.controller.asana.StandardAsanaClient.ASANA_CLIENT_OPTION_BASE_URL;
+
 import com.asana.Client;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.components.resource.ResourceCardinality;
-import org.apache.nifi.components.resource.ResourceType;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.apache.nifi.controller.asana.StandardAsanaClient.ASANA_CLIENT_OPTION_BASE_URL;
 
 @CapabilityDescription("Common service to authenticate with Asana, and to work on a specified workspace.")
 @Tags({"asana", "service", "authentication"})
@@ -48,7 +45,7 @@ public class StandardAsanaClientProviderService extends AbstractControllerServic
                     + "serving on a different URL. (typical for on-premise installations)")
             .required(true)
             .defaultValue(Client.DEFAULTS.get(ASANA_CLIENT_OPTION_BASE_URL).toString())
-            .identifiesExternalResource(ResourceCardinality.SINGLE, ResourceType.URL)
+            .addValidator(StandardValidators.URL_VALIDATOR)
             .build();
 
     protected static final PropertyDescriptor PROP_ASANA_PERSONAL_ACCESS_TOKEN = new PropertyDescriptor.Builder()

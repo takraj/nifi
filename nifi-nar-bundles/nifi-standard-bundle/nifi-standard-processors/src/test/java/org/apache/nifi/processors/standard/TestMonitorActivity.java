@@ -240,6 +240,7 @@ public class TestMonitorActivity {
         // At second trigger it's not connected, new last success transfer stored only locally.
         runner.setConnected(false);
         runner.enqueue("lorem ipsum");
+        TimeUnit.MILLISECONDS.sleep(500); // This sleep is needed to guarantee, that the stored timestamp will be different.
         runNext(runner);
 
         assertEquals(lastSuccessTransferAfterFirstTrigger,
@@ -260,7 +261,7 @@ public class TestMonitorActivity {
     }
 
     @Test
-    public void testReconcileAfterReconnectWhenNotPrimary() throws IOException {
+    public void testReconcileAfterReconnectWhenNotPrimary() throws IOException, InterruptedException {
         final TestableProcessor processor = new TestableProcessor(1000);
         final TestRunner runner = getRunnerScopeCluster(processor, false);
         final StateManager stateManager = runner.getStateManager();
@@ -277,6 +278,7 @@ public class TestMonitorActivity {
         // At second trigger it's not connected, new last success transfer stored only locally.
         runner.setConnected(false);
         runner.enqueue("lorem ipsum");
+        TimeUnit.MILLISECONDS.sleep(500); // This sleep is needed to guarantee, that the stored timestamp will be different.
         runNext(runner);
 
         assertEquals(lastSuccessTransferAfterFirstTrigger,

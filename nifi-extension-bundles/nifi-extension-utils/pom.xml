@@ -48,5 +48,7 @@
         <module>nifi-resource-transfer</module>
         <module>nifi-service-utils</module>
         <module>nifi-syslog-utils</module>
+        <module>nifi-database-adapters</module>
+        <module>nifi-derby-database-adapter</module>
     </modules>
 </project>

@@ -18,8 +18,8 @@ package org.apache.nifi.processors.standard;
 
 import org.apache.nifi.dbcp.DBCPConnectionPool;
 import org.apache.nifi.dbcp.utils.DBCPProperties;
-import org.apache.nifi.processors.standard.db.DatabaseAdapter;
-import org.apache.nifi.processors.standard.db.impl.PostgreSQLDatabaseAdapter;
+import org.apache.nifi.db.DatabaseAdapter;
+import org.apache.nifi.db.impl.PostgreSQLDatabaseAdapter;
 import org.apache.nifi.reporting.InitializationException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

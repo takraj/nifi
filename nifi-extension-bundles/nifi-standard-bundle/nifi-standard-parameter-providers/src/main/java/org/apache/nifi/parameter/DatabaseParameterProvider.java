@@ -25,7 +25,7 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.processors.standard.db.DatabaseAdapter;
+import org.apache.nifi.db.DatabaseAdapter;
 import org.apache.nifi.util.StringUtils;
 
 import java.sql.Connection;

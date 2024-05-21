@@ -46,7 +46,7 @@ import org.apache.nifi.processor.ProcessSessionFactory;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.processors.standard.db.DatabaseAdapter;
+import org.apache.nifi.db.DatabaseAdapter;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -348,7 +348,7 @@ public class GenerateTableFetch extends AbstractDatabaseFetchProcessor {
                     Integer type = getColumnType(tableName, colName, dbAdapter);
 
                     // Add a condition for the WHERE clause
-                    maxValueClauses.add(colName + (index == 0 ? " > " : " >= ") + getLiteralByType(type, maxValue, dbAdapter.getName()));
+                    maxValueClauses.add(colName + (index == 0 ? " > " : " >= ") + dbAdapter.getLiteralByType(type, maxValue));
                 }
 
             });
@@ -447,7 +447,7 @@ public class GenerateTableFetch extends AbstractDatabaseFetchProcessor {
                         Integer type = getColumnType(tableName, colName, dbAdapter);
 
                         // Add a condition for the WHERE clause
-                        maxValueClauses.add(colName + " <= " + getLiteralByType(type, maxValue, dbAdapter.getName()));
+                        maxValueClauses.add(colName + " <= " + dbAdapter.getLiteralByType(type, maxValue));
                     }
                 });
 

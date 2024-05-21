@@ -16,22 +16,33 @@
  */
 package org.apache.nifi.processors.standard;
 
-import org.apache.nifi.components.AllowableValue;
-import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.components.ValidationContext;
-import org.apache.nifi.components.ValidationResult;
-import org.apache.nifi.dbcp.DBCPService;
-import org.apache.nifi.expression.ExpressionLanguageScope;
-import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.flowfile.attributes.FragmentAttributes;
-import org.apache.nifi.processor.AbstractSessionFactoryProcessor;
-import org.apache.nifi.processor.ProcessContext;
-import org.apache.nifi.processor.Relationship;
-import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.processors.standard.db.DatabaseAdapter;
-import org.apache.nifi.processors.standard.db.impl.PhoenixDatabaseAdapter;
-import org.apache.nifi.util.StringUtils;
+import static java.sql.Types.ARRAY;
+import static java.sql.Types.BIGINT;
+import static java.sql.Types.BINARY;
+import static java.sql.Types.BIT;
+import static java.sql.Types.BLOB;
+import static java.sql.Types.BOOLEAN;
+import static java.sql.Types.CHAR;
+import static java.sql.Types.CLOB;
+import static java.sql.Types.DATE;
+import static java.sql.Types.DECIMAL;
+import static java.sql.Types.DOUBLE;
+import static java.sql.Types.FLOAT;
+import static java.sql.Types.INTEGER;
+import static java.sql.Types.LONGNVARCHAR;
+import static java.sql.Types.LONGVARBINARY;
+import static java.sql.Types.LONGVARCHAR;
+import static java.sql.Types.NCHAR;
+import static java.sql.Types.NUMERIC;
+import static java.sql.Types.NVARCHAR;
+import static java.sql.Types.REAL;
+import static java.sql.Types.ROWID;
+import static java.sql.Types.SMALLINT;
+import static java.sql.Types.TIME;
+import static java.sql.Types.TIMESTAMP;
+import static java.sql.Types.TINYINT;
+import static java.sql.Types.VARBINARY;
+import static java.sql.Types.VARCHAR;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -60,34 +71,21 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static java.sql.Types.ARRAY;
-import static java.sql.Types.BIGINT;
-import static java.sql.Types.BINARY;
-import static java.sql.Types.BIT;
-import static java.sql.Types.BLOB;
-import static java.sql.Types.BOOLEAN;
-import static java.sql.Types.CLOB;
-import static java.sql.Types.DECIMAL;
-import static java.sql.Types.DOUBLE;
-import static java.sql.Types.FLOAT;
-import static java.sql.Types.INTEGER;
-import static java.sql.Types.LONGVARBINARY;
-import static java.sql.Types.NUMERIC;
-import static java.sql.Types.CHAR;
-import static java.sql.Types.DATE;
-import static java.sql.Types.LONGNVARCHAR;
-import static java.sql.Types.LONGVARCHAR;
-import static java.sql.Types.NCHAR;
-import static java.sql.Types.NVARCHAR;
-import static java.sql.Types.REAL;
-import static java.sql.Types.ROWID;
-import static java.sql.Types.SMALLINT;
-import static java.sql.Types.TIME;
-import static java.sql.Types.TIMESTAMP;
-import static java.sql.Types.TINYINT;
-import static java.sql.Types.VARBINARY;
-import static java.sql.Types.VARCHAR;
+import org.apache.nifi.components.AllowableValue;
+import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.ValidationContext;
+import org.apache.nifi.components.ValidationResult;
+import org.apache.nifi.db.DatabaseAdapter;
+import org.apache.nifi.dbcp.DBCPService;
+import org.apache.nifi.expression.ExpressionLanguageScope;
+import org.apache.nifi.flowfile.FlowFile;
+import org.apache.nifi.flowfile.attributes.FragmentAttributes;
+import org.apache.nifi.processor.AbstractSessionFactoryProcessor;
+import org.apache.nifi.processor.ProcessContext;
+import org.apache.nifi.processor.Relationship;
+import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.StandardValidators;
+import org.apache.nifi.util.StringUtils;
 
 /**
  * A base class for common code shared by processors that fetch RDBMS data.
@@ -461,60 +459,6 @@ public abstract class AbstractDatabaseFetchProcessor extends AbstractSessionFact
                 throw new IOException("Type for column " + columnIndex + " is not valid for maintaining maximum value");
         }
         return null;
-    }
-
-    /**
-     * Returns a SQL literal for the given value based on its type. For example, values of character type need to be enclosed
-     * in single quotes, whereas values of numeric type should not be.
-     *
-     * @param type  The JDBC type for the desired literal
-     * @param value The value to be converted to a SQL literal
-     * @return A String representing the given value as a literal of the given type
-     */
-    protected static String getLiteralByType(int type, String value, String databaseType) {
-        // Format value based on column type. For example, strings and timestamps need to be quoted
-        switch (type) {
-            // For string-represented values, put in single quotes
-            case CHAR:
-            case LONGNVARCHAR:
-            case LONGVARCHAR:
-            case NCHAR:
-            case NVARCHAR:
-            case VARCHAR:
-            case ROWID:
-                return "'" + value + "'";
-            case TIME:
-                if (PhoenixDatabaseAdapter.NAME.equals(databaseType)) {
-                    return "time '" + value + "'";
-                }
-            case DATE:
-            case TIMESTAMP:
-                // TODO delegate to database adapter the conversion instead of using if in this
-                // class.
-                // TODO (cont) if a new else is added, please refactor the code.
-                // Ideally we should probably have a method on the adapter to get a clause that
-                // coerces a
-                // column to a Timestamp if need be (the generic one can be a no-op)
-                if (!StringUtils.isEmpty(databaseType)
-                        && (databaseType.contains("Oracle") || PhoenixDatabaseAdapter.NAME.equals(databaseType))) {
-                    // For backwards compatibility, the type might be TIMESTAMP but the state value
-                    // is in DATE format. This should be a one-time occurrence as the next maximum
-                    // value
-                    // should be stored as a full timestamp. Even so, check to see if the value is
-                    // missing time-of-day information, and use the "date" coercion rather than the
-                    // "timestamp" coercion in that case
-                    if (value.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                        return "date '" + value + "'";
-                    } else {
-                        return "timestamp '" + value + "'";
-                    }
-                } else {
-                    return "'" + value + "'";
-                }
-                // Else leave as is (numeric types, e.g.)
-            default:
-                return value;
-        }
     }
 
     /**

@@ -68,18 +68,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyDescriptor.Builder;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.db.DatabaseAdapter;
+import org.apache.nifi.db.DatabaseAdapterProvider;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.expression.ExpressionLanguageScope;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.FragmentAttributes;
+import org.apache.nifi.migration.DatabaseAdapterProviderMigration;
+import org.apache.nifi.migration.PropertyConfiguration;
 import org.apache.nifi.processor.AbstractSessionFactoryProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.Relationship;
@@ -182,9 +184,14 @@ public abstract class AbstractDatabaseFetchProcessor extends AbstractSessionFact
     // The delimiter to use when referencing qualified names (such as table@!@column in the state map)
     protected static final String NAMESPACE_DELIMITER = "@!@";
 
-    public static final PropertyDescriptor DB_TYPE;
+    public static final PropertyDescriptor DATABASE_ADAPTER_PROVIDER = new Builder()
+            .name("db-adapter-provider")
+            .displayName("Database Adapter Provider")
+            .description("The service, that is used for generating database-specific code.")
+            .identifiesControllerService(DatabaseAdapterProvider.class)
+            .required(true)
+            .build();
 
-    protected final static Map<String, DatabaseAdapter> dbAdapters = new HashMap<>();
     protected final Map<String, Integer> columnTypeMap = new HashMap<>();
 
     // This value is set when the processor is scheduled and indicates whether the Table Name property contains Expression Language.
@@ -206,26 +213,6 @@ public abstract class AbstractDatabaseFetchProcessor extends AbstractSessionFact
     // A Map (name to value) of initial maximum-value properties, filled at schedule-time and used at trigger-time
     protected Map<String, String> maxValueProperties;
 
-    static {
-        // Load the DatabaseAdapters
-        ArrayList<AllowableValue> dbAdapterValues = new ArrayList<>();
-        ServiceLoader<DatabaseAdapter> dbAdapterLoader = ServiceLoader.load(DatabaseAdapter.class);
-        dbAdapterLoader.forEach(it -> {
-            dbAdapters.put(it.getName(), it);
-            dbAdapterValues.add(new AllowableValue(it.getName(), it.getName(), it.getDescription()));
-        });
-
-        DB_TYPE = new PropertyDescriptor.Builder()
-                .name("db-fetch-db-type")
-                .displayName("Database Type")
-                .description("The type/flavor of database, used for generating database-specific code. In many cases the Generic type "
-                        + "should suffice, but some databases (such as Oracle) require custom SQL clauses. ")
-                .allowableValues(dbAdapterValues.toArray(new AllowableValue[dbAdapterValues.size()]))
-                .defaultValue("Generic")
-                .required(true)
-                .build();
-    }
-
     // A common validation procedure for DB fetch processors, it stores whether the Table Name and/or Max Value Column properties have expression language
     protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
         // For backwards-compatibility, keep track of whether the table name and max-value column properties are dynamic (i.e. has expression language)
@@ -233,6 +220,12 @@ public abstract class AbstractDatabaseFetchProcessor extends AbstractSessionFact
         isDynamicMaxValues = validationContext.isExpressionLanguagePresent(validationContext.getProperty(MAX_VALUE_COLUMN_NAMES).getValue());
 
         return super.customValidate(validationContext);
+    }
+
+    @Override
+    public void migrateProperties(final PropertyConfiguration config) {
+        super.migrateProperties(config);
+        DatabaseAdapterProviderMigration.migrateProperties(config, DATABASE_ADAPTER_PROVIDER, "db-fetch-db-type");
     }
 
     public void setup(final ProcessContext context) {
@@ -255,7 +248,8 @@ public abstract class AbstractDatabaseFetchProcessor extends AbstractSessionFact
             final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();
             final String sqlQuery = context.getProperty(SQL_QUERY).evaluateAttributeExpressions().getValue();
 
-            final DatabaseAdapter dbAdapter = dbAdapters.get(context.getProperty(DB_TYPE).getValue());
+            final DatabaseAdapter dbAdapter = context.getProperty(DATABASE_ADAPTER_PROVIDER).asControllerService(
+                    DatabaseAdapterProvider.class).getAdapter();
             try (final Connection con = dbcpService.getConnection(flowFile == null ? Collections.emptyMap() : flowFile.getAttributes());
                  final Statement st = con.createStatement()) {
 

@@ -35,6 +35,7 @@ import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.state.Scope;
 import org.apache.nifi.components.state.StateMap;
+import org.apache.nifi.db.DatabaseAdapterProvider;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.expression.ExpressionLanguageScope;
@@ -179,7 +180,7 @@ public class GenerateTableFetch extends AbstractDatabaseFetchProcessor {
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(DBCP_SERVICE);
-        pds.add(DB_TYPE);
+        pds.add(DATABASE_ADAPTER_PROVIDER);
         pds.add(TABLE_NAME);
         pds.add(COLUMN_NAMES);
         pds.add(MAX_VALUE_COLUMN_NAMES);
@@ -264,7 +265,8 @@ public class GenerateTableFetch extends AbstractDatabaseFetchProcessor {
         final ComponentLog logger = getLogger();
 
         final DBCPService dbcpService = context.getProperty(DBCP_SERVICE).asControllerService(DBCPService.class);
-        final DatabaseAdapter dbAdapter = dbAdapters.get(context.getProperty(DB_TYPE).getValue());
+        final DatabaseAdapter dbAdapter = context.getProperty(DATABASE_ADAPTER_PROVIDER).asControllerService(
+                DatabaseAdapterProvider.class).getAdapter();
         final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(fileToProcess).getValue();
         final String columnNames = context.getProperty(COLUMN_NAMES).evaluateAttributeExpressions(fileToProcess).getValue();
         final String maxValueColumnNames = context.getProperty(MAX_VALUE_COLUMN_NAMES).evaluateAttributeExpressions(fileToProcess).getValue();

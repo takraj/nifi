@@ -25,6 +25,7 @@ import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.state.Scope;
 import org.apache.nifi.components.state.StateMap;
+import org.apache.nifi.db.DatabaseAdapterProvider;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.expression.ExpressionLanguageScope;
@@ -216,7 +217,8 @@ public abstract class AbstractQueryDatabaseTable extends AbstractDatabaseFetchPr
 
         final Boolean propertyAutoCommit = validationContext.getProperty(AUTO_COMMIT).evaluateAttributeExpressions().asBoolean();
         final Integer fetchSize = validationContext.getProperty(FETCH_SIZE).evaluateAttributeExpressions().asInteger();
-        final DatabaseAdapter dbAdapter = dbAdapters.get(validationContext.getProperty(DB_TYPE).getValue());
+        final DatabaseAdapter dbAdapter = validationContext.getProperty(DATABASE_ADAPTER_PROVIDER).asControllerService(
+                DatabaseAdapterProvider.class).getAdapter();
         final Boolean adapterAutoCommit = dbAdapter == null
                 ? null
                 : dbAdapter.getAutoCommitForReads(fetchSize).orElse(null);
@@ -227,7 +229,7 @@ public abstract class AbstractQueryDatabaseTable extends AbstractDatabaseFetchPr
                     .input(String.valueOf(propertyAutoCommit))
                     .explanation(String.format("'%s' must be set to '%s' because '%s' %s requires it to be '%s'",
                             AUTO_COMMIT.getDisplayName(), adapterAutoCommit,
-                            dbAdapter.getName(), DB_TYPE.getDisplayName(), adapterAutoCommit))
+                            dbAdapter.getName(), DATABASE_ADAPTER_PROVIDER.getDisplayName(), adapterAutoCommit))
                     .build());
         }
 
@@ -258,7 +260,8 @@ public abstract class AbstractQueryDatabaseTable extends AbstractDatabaseFetchPr
         final ComponentLog logger = getLogger();
 
         final DBCPService dbcpService = context.getProperty(DBCP_SERVICE).asControllerService(DBCPService.class);
-        final DatabaseAdapter dbAdapter = dbAdapters.get(context.getProperty(DB_TYPE).getValue());
+        final DatabaseAdapter dbAdapter = context.getProperty(DATABASE_ADAPTER_PROVIDER).asControllerService(
+                DatabaseAdapterProvider.class).getAdapter();
         final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions().getValue();
         final String columnNames = context.getProperty(COLUMN_NAMES).evaluateAttributeExpressions().getValue();
         final String sqlQuery = context.getProperty(SQL_QUERY).evaluateAttributeExpressions().getValue();

@@ -60,6 +60,8 @@ import java.util.stream.Stream;
 import org.apache.commons.dbcp2.DelegatingConnection;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.db.ColumnDescription;
+import org.apache.nifi.db.DatabaseAdapterProvider;
+import org.apache.nifi.db.GenericDatabaseAdapterProvider;
 import org.apache.nifi.db.TableSchema;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -189,12 +191,16 @@ public class PutDatabaseRecordTest {
 
     private void setRunner(TestCase testCase) throws InitializationException {
         processor = new PutDatabaseRecord();
+        final DatabaseAdapterProvider dbAdapterProvider = new GenericDatabaseAdapterProvider();
         //Mock the DBCP Controller Service so we can control the Results
         dbcp = spy(new DBCPServiceSimpleImpl(DB_LOCATION));
 
         final Map<String, String> dbcpProperties = new HashMap<>();
 
         runner = TestRunners.newTestRunner(processor);
+        runner.addControllerService("dbAdapterProvider", dbAdapterProvider);
+        runner.enableControllerService(dbAdapterProvider);
+        runner.setProperty(PutDatabaseRecord.DATABASE_ADAPTER_PROVIDER, "dbAdapterProvider");
         runner.addControllerService(DBCP_SERVICE_ID, dbcp, dbcpProperties);
         runner.enableControllerService(dbcp);
         runner.setProperty(PutDatabaseRecord.DBCP_SERVICE, DBCP_SERVICE_ID);
@@ -230,6 +236,10 @@ public class PutDatabaseRecordTest {
         dbcp = new DBCPServiceAutoCommitTest(DB_LOCATION);
         final Map<String, String> dbcpProperties = new HashMap<>();
         runner = TestRunners.newTestRunner(processor);
+        final DatabaseAdapterProvider dbAdapterProvider = new GenericDatabaseAdapterProvider();
+        runner.addControllerService("dbAdapterProvider", dbAdapterProvider);
+        runner.enableControllerService(dbAdapterProvider);
+        runner.setProperty(PutDatabaseRecord.DATABASE_ADAPTER_PROVIDER, dbAdapterProvider.getIdentifier());
         runner.addControllerService(DBCP_SERVICE_ID, dbcp, dbcpProperties);
         runner.enableControllerService(dbcp);
         runner.setProperty(PutDatabaseRecord.DBCP_SERVICE, DBCP_SERVICE_ID);
@@ -273,6 +283,10 @@ public class PutDatabaseRecordTest {
         final Map<String, String> dbcpProperties = new HashMap<>();
 
         runner = TestRunners.newTestRunner(processor);
+        final DatabaseAdapterProvider dbAdapterProvider = new GenericDatabaseAdapterProvider();
+        runner.addControllerService("dbAdapterProvider", dbAdapterProvider);
+        runner.enableControllerService(dbAdapterProvider);
+        runner.setProperty(PutDatabaseRecord.DATABASE_ADAPTER_PROVIDER, dbAdapterProvider.getIdentifier());
         runner.addControllerService(DBCP_SERVICE_ID, dbcp, dbcpProperties);
         runner.enableControllerService(dbcp);
         runner.setProperty(PutDatabaseRecord.DBCP_SERVICE, DBCP_SERVICE_ID);
@@ -2142,6 +2156,10 @@ public class PutDatabaseRecordTest {
 
         dbcp = spy(new DBCPServiceSimpleImpl(DB_LOCATION, false)); // Use H2
         runner = TestRunners.newTestRunner(processor);
+        final DatabaseAdapterProvider dbAdapterProvider = new GenericDatabaseAdapterProvider();
+        runner.addControllerService("dbAdapterProvider", dbAdapterProvider);
+        runner.enableControllerService(dbAdapterProvider);
+        runner.setProperty(PutDatabaseRecord.DATABASE_ADAPTER_PROVIDER, dbAdapterProvider.getIdentifier());
         runner.addControllerService(DBCP_SERVICE_ID, dbcp, new HashMap<>());
         runner.enableControllerService(dbcp);
         runner.setProperty(PutDatabaseRecord.DBCP_SERVICE, DBCP_SERVICE_ID);
